@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  tensorrt-convert:
+    build:
+      context: .
+      dockerfile: Dockerfile  
+    image: tensorrt-convert
+    dns:
+    # ip route | awk '/default/ { print $3 }'
+    # sudo nano /etc/docker/daemon.json
+    # sudo systemctl restart docker
+      - 172.21.88.1 # Địa chỉ DNS của host hoặc gateway: ip route | awk '/default/ { print $3 }'
+      - 8.8.8.8
+      - 8.8.4.4
+      - 127.0.0.53
+      - 127.0.0.11    
+    # env_file:
+    #   - F5_TTS_Faster/.env  # Đảm bảo có dòng này    
+    volumes:
+      - ${PWD}:/workspace
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              # count: "all" # 1
+              device_ids: ["0"] # must comment the above line if this line is uncommented.
+              capabilities: [gpu, utility, video, compute]
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    # command: ["/bin/bash", "/workspace/F5_TTS_Faster/export_onnx_v1/script.sh"] #convert_f5-tts.sh
+    command: ["/bin/bash"]
